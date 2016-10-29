@@ -1,6 +1,7 @@
 var fs = require('fs')
 var readline = require('readline')
 var stream = require('stream')
+var _ = require('lodash')
 
 var instream = fs.createReadStream('jointTransactionsOct2016.csv')
 var outstream = new stream
@@ -29,12 +30,16 @@ function decorateWithAccounts(object) {
     return object
 }
 
+function processLine(line) {
+    return _.flow(
+        parseLineToObject,
+        decorateWithAccounts,
+        generateLedgerFromObject
+    )(line)
+}
+
 function onLine(line) {
-    console.log(generateLedgerFromObject(
-        decorateWithAccounts(
-            parseLineToObject(line)
-        )
-    ))
+    console.log(processLine(line))
 }
 
 rl.on('line', onLine)
