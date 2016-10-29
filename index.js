@@ -7,6 +7,7 @@ var instream = fs.createReadStream('jointTransactionsOct2016.csv')
 var outstream = new stream
 var rl = readline.createInterface(instream, outstream)
 
+var withdrawalRules = require('./withdrawalRules')
 
 function parseLineToObject(line) {
     var fields = line.split(',')
@@ -33,65 +34,6 @@ function decorateWithAccounts(object) {
             )
     }
 }
-
-var withdrawalRules = [
-    {
-        match: "PAYPAL",
-        to: "expenses:housing",
-        memo: "Rent Paid"
-    },
-    {
-        match: "PCC",
-        to: "expenses:grocery",
-        memo: "Groceries"
-    },
-    {
-        match: "KEN",
-        to: "expenses:grocery",
-        memo: "Groceries"
-    },
-    {
-        match: "FRED",
-        to: "expenses:grocery",
-        memo: "Groceries"
-    },
-    {
-        match: "TILTH",
-        to: "expenses:grocery",
-        memo: "CSA"
-    },
-    {
-        match: "CITY LIGHT",
-        to: "expenses:utilities",
-        memo: "Electric Bill"
-    },
-    {
-        match: "LANDS END",
-        to: "expenses:household"
-    },
-    {
-        match: "BOLDTYPETICKETS",
-        to: "expenses:entertainment:events"
-    },
-    {
-        match: "AMAZON",
-        to: "expenses:household"
-    },
-    {
-        match: "BROADCAST",
-        to: "expenses:entertainment:dining:coffee"
-    },
-    {
-        match: (object) => object.memo.indexOf("BALLARD COFFEE") > -1 && object.amount > 10,
-        to: "expenses:grocery:coffee",
-        memo: "Coffee Beans"
-    },
-    {
-        match: (object) => object.memo.indexOf("HERKIMER") > -1 && object.amount > 10,
-        to: "expenses:grocery:coffee",
-        memo: "Coffee Beans"
-    },
-]
 
 function isFunctionRule(rule) {
     return typeof(rule.match) === 'function'
@@ -147,17 +89,22 @@ function processLine(line) {
     )(line)
 }
 
+var entries = []
+
 function onLine(line) {
     // Skip header
     if (line.startsWith('Date')) {
         return
     }
 
-    console.log(processLine(line))
+    entries.push(processLine(line))
 }
 
 rl.on('line', onLine)
 
 rl.on('close', function() {
+    entries.reverse().forEach((entry) => {
+        console.log(entry)
+    })
 })
 
