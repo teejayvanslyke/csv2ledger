@@ -28,11 +28,97 @@ function decorateWithAccounts(object) {
                 toAccount: "assets:joint"
             })
         default:
-            return _.assign({}, object, {
-                toAccount: "expenses:default",
-                fromAccount: "assets:joint"
-            })
+            return decorateWithWithdrawalAccounts(
+                _.assign({}, object, { fromAccount: 'assets:joint' })
+            )
     }
+}
+
+var withdrawalRules = [
+    {
+        match: "PAYPAL",
+        to: "expenses:housing",
+        memo: "Rent Paid"
+    },
+    {
+        match: "PCC",
+        to: "expenses:grocery",
+        memo: "Groceries"
+    },
+    {
+        match: "KEN",
+        to: "expenses:grocery",
+        memo: "Groceries"
+    },
+    {
+        match: "FRED",
+        to: "expenses:grocery",
+        memo: "Groceries"
+    },
+    {
+        match: "TILTH",
+        to: "expenses:grocery",
+        memo: "CSA"
+    },
+    {
+        match: "CITY LIGHT",
+        to: "expenses:utilities",
+        memo: "Electric Bill"
+    },
+    {
+        match: "LANDS END",
+        to: "expenses:household"
+    },
+    {
+        match: "BOLDTYPETICKETS",
+        to: "expenses:entertainment:events"
+    },
+    {
+        match: "AMAZON",
+        to: "expenses:household"
+    },
+    {
+        match: "BROADCAST",
+        to: "expenses:entertainment:dining:coffee"
+    },
+    {
+        match: (object) => object.memo.indexOf("BALLARD COFFEE") > -1 && object.amount > 10,
+        to: "expenses:grocery:coffee",
+        memo: "Coffee Beans"
+    },
+    {
+        match: (object) => object.memo.indexOf("HERKIMER") > -1 && object.amount > 10,
+        to: "expenses:grocery:coffee",
+        memo: "Coffee Beans"
+    },
+]
+
+function isFunctionRule(rule) {
+    return typeof(rule.match) === 'function'
+}
+
+function objectMatchesRule(object, rule) {
+    return (
+        (isFunctionRule(rule) && rule.match(object)) ||
+        (object.memo.indexOf(rule.match) > -1)
+    )
+}
+
+function decorateWithWithdrawalAccounts(object) {
+    for (var i=0; i<withdrawalRules.length; i++) {
+        var rule = withdrawalRules[i]
+
+        if (objectMatchesRule(object, rule)) {
+            return _.assign({}, object, {
+                toAccount: rule.to,
+                memo: rule.memo + ' - ' + object.memo
+            })
+        }
+    }
+
+    return _.assign({}, object, {
+        toAccount: "expenses:entertainment:dining"
+    })
 }
 
 function decorateWithFormattedAmount(object) {
