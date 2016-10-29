@@ -14,7 +14,7 @@ function parseLineToObject(line) {
     return {
         date: fields[0],
         time: fields[1],
-        amount: parseFloat(fields[2]),
+        amount: Math.abs(parseFloat(fields[2])),
         type: fields[3],
         memo: [ fields[4], fields[5], fields[6] ].join(', ')
     }
@@ -35,13 +35,18 @@ function decorateWithAccounts(object) {
     }
 }
 
+function decorateWithFormattedAmount(object) {
+    var formattedAmount = '$' + object.amount.toFixed(2)
+    return _.assign({}, object, { formattedAmount: formattedAmount })
+}
+
 function formatDate(object) {
     return _.assign({}, object, { date: object.date.replace(/-/g, '/') })
 }
 
 function generateLedgerFromObject(object) {
     return object.date + " " + object.memo + "\n" +
-        "  " + object.toAccount + "  " + object.amount + "\n" +
+        "  " + object.toAccount + "  " + object.formattedAmount + "\n" +
         "  " + object.fromAccount + "\n"
 }
 
@@ -50,6 +55,7 @@ function processLine(line) {
     return _.flow(
         parseLineToObject,
         decorateWithAccounts,
+        decorateWithFormattedAmount,
         formatDate,
         generateLedgerFromObject
     )(line)
