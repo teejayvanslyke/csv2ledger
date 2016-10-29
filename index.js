@@ -30,10 +30,15 @@ function decorateWithAccounts(object) {
     return object
 }
 
+function formatDate(object) {
+    return _.assign({}, object, { date: object.date.replace(/-/g, '/') })
+}
+
 function processLine(line) {
     return _.flow(
         parseLineToObject,
         decorateWithAccounts,
+        formatDate,
         generateLedgerFromObject
     )(line)
 }
