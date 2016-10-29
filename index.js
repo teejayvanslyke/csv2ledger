@@ -62,6 +62,11 @@ function processLine(line) {
 }
 
 function onLine(line) {
+    // Skip header
+    if (line.startsWith('Date')) {
+        return
+    }
+
     console.log(processLine(line))
 }
 
