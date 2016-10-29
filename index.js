@@ -14,17 +14,25 @@ function parseLineToObject(line) {
     return {
         date: fields[0],
         time: fields[1],
-        amount: fields[2],
+        amount: parseFloat(fields[2]),
         type: fields[3],
         memo: [ fields[4], fields[5], fields[6] ].join(', ')
     }
 }
 
 function decorateWithAccounts(object) {
-    return _.assign({}, object, {
-        toAccount: "expenses:grocery",
-        fromAccount: "assets:joint"
-    })
+    switch (object.type) {
+        case "Deposit":
+            return _.assign({}, object, {
+                fromAccount: "income:default",
+                toAccount: "assets:joint"
+            })
+        default:
+            return _.assign({}, object, {
+                toAccount: "expenses:default",
+                fromAccount: "assets:joint"
+            })
+    }
 }
 
 function formatDate(object) {
