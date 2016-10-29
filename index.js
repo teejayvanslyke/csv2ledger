@@ -20,19 +20,23 @@ function parseLineToObject(line) {
     }
 }
 
-function generateLedgerFromObject(object) {
-    return object.date + " " + object.memo + "\n" +
-        "  expenses:grocery  " + object.amount + "\n" +
-        "  assets:joint\n"
-}
-
 function decorateWithAccounts(object) {
-    return object
+    return _.assign({}, object, {
+        toAccount: "expenses:grocery",
+        fromAccount: "assets:joint"
+    })
 }
 
 function formatDate(object) {
     return _.assign({}, object, { date: object.date.replace(/-/g, '/') })
 }
+
+function generateLedgerFromObject(object) {
+    return object.date + " " + object.memo + "\n" +
+        "  " + object.toAccount + "  " + object.amount + "\n" +
+        "  " + object.fromAccount + "\n"
+}
+
 
 function processLine(line) {
     return _.flow(
