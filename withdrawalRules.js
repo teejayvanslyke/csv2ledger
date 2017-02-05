@@ -55,5 +55,10 @@ module.exports = [
         to: "expenses:grocery:coffee",
         memo: "Coffee Beans"
     },
+    {
+        match: "684-PARK",
+        to: "expenses:transportation:parking",
+        memo: "Parking"
+    }
 ]
 

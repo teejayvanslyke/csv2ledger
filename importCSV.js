@@ -5,23 +5,27 @@ var _ = require('lodash')
 
 var reducers = require('./reducers')
 
-module.exports = function(inputFile) {
+function processLine(line, accountName) {
+    return _.flow(
+        reducers.parseLineToObject,
+        reducers.decorateWithAccounts,
+        reducers.decorateWithFormattedAmount,
+        reducers.formatDate,
+        reducers.generateLedgerFromObject
+    )(line)
+}
+
+module.exports = function(inputFile, accountName) {
     var instream = fs.createReadStream(inputFile)
     var outstream = new stream
     var rl = readline.createInterface(instream, outstream)
 
 
-    function processLine(line) {
-        return _.flow(
-            reducers.parseLineToObject,
-            reducers.decorateWithAccounts,
-            reducers.decorateWithFormattedAmount,
-            reducers.formatDate,
-            reducers.generateLedgerFromObject
-        )(line)
-    }
-
     var entries = []
+
+    global.config = {
+        accountName: accountName
+    }
 
     function onLine(line) {
         // Skip header

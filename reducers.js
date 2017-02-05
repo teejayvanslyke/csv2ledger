@@ -47,11 +47,11 @@ exports.decorateWithAccounts = function(object) {
         case "Deposit":
             return _.assign({}, object, {
                 fromAccount: "income:default",
-                toAccount: "assets:joint"
+                toAccount: global.config.accountName
             })
         default:
             return decorateWithWithdrawalAccounts(
-                _.assign({}, object, { fromAccount: 'assets:joint' })
+                _.assign({}, object, { fromAccount: global.config.accountName })
             )
     }
 }
